@@ -1,0 +1,1082 @@
+#include <windows.h>
+#include <GL/glut.h>
+#include <math.h>
+ 
+// Sun
+float sunOffsetY = -5.5f;
+int sunUserControl = 0;
+ 
+// Sky
+float skyR = 90;
+float skyG = 105;
+float skyB = 135;
+ 
+// Clouds
+float cloud1OffX = 0.0f;
+float cloud2OffX = 0.0f;
+int showClouds = 1;
+ 
+// Flag
+int showFlag = 1;
+float flagTime = 0.0f;
+float flagAngle = 0.0f;
+ 
+// Boat
+int showBoat = 1;
+float boatTime = 0.0f;
+float boatBobY = 0.0f;
+ 
+// Smoke
+int showSmoke = 1;
+float smokeTime = 0.0f;
+ 
+// Tree
+float leafTime = 0.0f;
+ 
+// River
+float riverLineTime = 0.0f;
+float riverLineBoost = 0.0f;
+ 
+// Animation
+float animationSpeed = 0.015f;
+ 
+// Scene
+int currentScene = 1;
+ 
+ 
+// ================= Basic shapes =================
+ 
+// Box draw kore
+void box(float x1,float y1,float x2,float y2,float x3,float y3,float x4,float y4,float xf,float yf)
+{
+    glBegin(GL_POLYGON);
+    glVertex2f(x1+xf,y1+yf);
+    glVertex2f(x2+xf,y2+yf);
+    glVertex2f(x3+xf,y3+yf);
+    glVertex2f(x4+xf,y4+yf);
+    glEnd();
+}
+ 
+// Triangle draw kore
+void tri(float x1,float y1,float x2,float y2,float x3,float y3,float xf,float yf)
+{
+    glBegin(GL_POLYGON);
+    glVertex2f(x1+xf,y1+yf);
+    glVertex2f(x2+xf,y2+yf);
+    glVertex2f(x3+xf,y3+yf);
+    glEnd();
+}
+ 
+// Circle draw kore
+void circle(float radius,float xc,float yc,float r,float g,float b)
+{
+    glBegin(GL_POLYGON);
+ 
+    for(int i=0;i<200;i++)
+    {
+        glColor3ub(r,g,b);
+ 
+        float pi=3.1416;
+        float A=(i*2*pi)/200;
+        float x=radius*cos(A);
+        float y=radius*sin(A);
+ 
+        glVertex2f(x+xc,y+yc);
+    }
+ 
+    glEnd();
+}
+ 
+ 
+// Straight line
+void line(float x1,float y1,float x2,float y2)
+{
+    glBegin(GL_LINES);
+    glVertex2f(x1,y1);
+    glVertex2f(x2,y2);
+    glEnd();
+}
+ 
+ 
+// ================= Sky =================
+ 
+void sky1_1()
+{
+    glColor3ub(skyR,skyG,skyB);
+    box(-20,1.5,20,1.5,20,10,-20,10,0,0);
+}
+ 
+ 
+// ================= Sun =================
+ 
+void sun1_1()
+{
+    glPushMatrix();
+    glTranslatef(0,sunOffsetY,0);
+ 
+    circle(1.5,12.55,7.0,244,190,104);
+ 
+    glPopMatrix();
+}
+ 
+ 
+// ================= Clouds =================
+ 
+// Cloud 1
+void cloud1_1()
+{
+    if(!showClouds)
+        return;
+ 
+    glPushMatrix();
+    glTranslatef(cloud1OffX,0,0);
+ 
+    glColor3ub(246,250,252);
+    circle(0.65,-14.55,7.1,246,250,252);
+    circle(1.0,-13.55,7.1,246,250,252);
+    circle(0.85,-12.45,7.1,246,250,252);
+    circle(0.65,-11.35,7.1,246,250,252);
+ 
+    glPopMatrix();
+}
+ 
+// Cloud 2
+void cloud2_1()
+{
+    if(!showClouds)
+        return;
+ 
+    glPushMatrix();
+    glTranslatef(cloud2OffX,0,0);
+ 
+    glColor3ub(246,250,252);
+    circle(0.65,2.35,7.55,246,250,252);
+    circle(1.05,3.05,7.55,246,250,252);
+    circle(0.9,3.75,7.55,246,250,252);
+    circle(0.65,4.65,7.55,246,250,252);
+ 
+    glPopMatrix();
+}
+ 
+ 
+// ================= Hills =================
+ 
+// Back hills
+void hillBack1_1()
+{
+    glColor3ub(178,196,196);
+ 
+    tri(-20,1.5,-12,1.5,-16,3.5,0,0);
+    tri(-14,1.5,-4,1.5,-9,4,0,0);
+    tri(-6,1.5,4,1.5,-1,4,0,0);
+    tri(2,1.5,10,1.5,6,3.5,0,0);
+}
+ 
+// Small mountains
+void hillSmall1_1()
+{
+    glColor3ub(146,166,152);
+    tri(-20,1.5,-17.5,1.5,-17.5,4,0,0);
+ 
+    glColor3ub(124,146,134);
+    tri(-17.5,1.5,-15,1.5,-17.5,4,0,0);
+ 
+    glColor3ub(132,154,140);
+    tri(-5,1.5,1,1.5,1,4.5,0,0);
+ 
+    glColor3ub(110,134,122);
+    tri(1,1.5,7,1.5,1,4.5,0,0);
+ 
+    // Snow cap
+    glColor3ub(238,242,240);
+    tri(-1,3.5,1,3.5,1,4.5,0,0);
+    tri(-1,3.5,0,3.5,-0.5,3,0,0);
+ 
+    glColor3ub(208,220,220);
+    tri(1,3.5,3,3.5,1,4.5,0,0);
+    tri(1.5,3.5,2.5,3.5,2,3,0,0);
+}
+ 
+// Main mountains
+void hillMain1_1()
+{
+    glColor3ub(104,128,112);
+    tri(-19,1.5,-11,1.5,-11,5.5,0,0);
+ 
+    glColor3ub(82,106,94);
+    tri(-11,1.5,-3,1.5,-11,5.5,0,0);
+ 
+    // Snow cap
+    glColor3ub(244,247,245);
+    tri(-14,4,-11,4,-11,5.5,0,0);
+    tri(-14,4,-13,4,-13.5,3,0,0);
+    tri(-12,4,-11,4,-11.5,3,0,0);
+ 
+    glColor3ub(212,224,224);
+    tri(-11,4,-8,4,-11,5.5,0,0);
+    tri(-10,4,-9,4,-9.5,3,0,0);
+}
+ 
+ 
+// ================= River =================
+ 
+void river1_1()
+{
+    // Upper water
+    glColor3ub(78,122,150);
+    box(-20,0.75,20,0.75,20,1.5,-20,1.5,0,0);
+ 
+    // Lower water
+    glColor3ub(92,140,166);
+    box(-20,0,20,0,20,0.75,-20,0.75,0,0);
+ 
+    // Water movement
+    float lineOffset=(0.05f+riverLineBoost)*sinf(riverLineTime*2.0f);
+ 
+    // Sun reflection
+    glLineWidth(3);
+    glColor3ub(238,208,150);
+ 
+    glPushMatrix();
+    glTranslatef(0,lineOffset,0);
+    line(12.5,1.2,13.5,1.2);
+    line(12,0.8,14,0.8);
+    line(12.5,0.4,13.5,0.4);
+    glPopMatrix();
+ 
+    glLineWidth(1);
+ 
+    // Water waves
+    glLineWidth(2);
+    glColor3ub(150,190,210);
+ 
+    glPushMatrix();
+    glTranslatef(0,-lineOffset,0);
+    line(-17,1.1,-15,1.1);
+    line(-10,0.5,-8,0.5);
+    line(-4,1.2,-2.5,1.2);
+    line(2,0.4,4.5,0.4);
+    line(7,1,8.5,1);
+    line(16,0.5,18,0.5);
+    glPopMatrix();
+ 
+    glLineWidth(1);
+ 
+    // River bank
+    glColor3ub(166,158,132);
+    box(-20,-0.5,20,-0.5,20,0,-20,0,0,0);
+}
+ 
+ 
+// ================= Ground =================
+ 
+void ground1_1()
+{
+    glColor3ub(146,170,120);
+ 
+    box(-20,-3.5,20,-3.5,20,-0.5,-20,-0.5,0,0);
+}
+ 
+ 
+// ================= Road =================
+ 
+void road1_1()
+{
+    // Main road
+    glColor3ub(178,152,114);
+    box(-20,-8.5,20,-8.5,20,-4,-20,-4,0,0);
+ 
+    // Road strips
+    glColor3ub(158,132,96);
+    box(-20,-5.5,20,-5.5,20,-5,-20,-5,0,0);
+    box(-20,-7.5,20,-7.5,20,-7,-20,-7,0,0);
+ 
+    // Road marks
+    glLineWidth(3);
+    glColor3ub(150,124,90);
+ 
+    line(-18,-6.5,-15,-6.5);
+    line(-11,-4.5,-8.5,-4.5);
+    line(-5,-6,-2,-6);
+    line(2,-8,5,-8);
+    line(7.5,-4.5,10,-4.5);
+    line(13,-6.5,16,-6.5);
+ 
+    glLineWidth(1);
+ 
+    // Footpath
+    glColor3ub(152,140,104);
+    box(-20,-4,20,-4,20,-3.5,-20,-3.5,0,0);
+    box(-20,-9,20,-9,20,-8.5,-20,-8.5,0,0);
+ 
+    // Lower grass
+    glColor3ub(132,158,110);
+    box(-20,-10,20,-10,20,-9,-20,-9,0,0);
+}
+ 
+ 
+// ================= Boat =================
+ 
+void boat1_1()
+{
+    if(!showBoat)
+        return;
+ 
+    glPushMatrix();
+    glTranslatef(0,0.35f+boatBobY,0);
+ 
+    // Boat body
+    glColor3ub(95,65,42);
+    glBegin(GL_POLYGON);
+    glVertex2f(7.5,0.2);
+    glVertex2f(8.2,-0.4);
+    glVertex2f(11.8,-0.4);
+    glVertex2f(12.5,0.2);
+    glVertex2f(11.5,0.05);
+    glVertex2f(8.5,0.05);
+    glEnd();
+ 
+    // Boat upper part
+    glColor3ub(125,85,48);
+    glBegin(GL_POLYGON);
+    glVertex2f(8.5,0.05);
+    glVertex2f(11.5,0.05);
+    glVertex2f(11.1,-0.15);
+    glVertex2f(8.9,-0.15);
+    glEnd();
+ 
+    // Boat outline
+    glColor3ub(75,50,32);
+    glLineWidth(4);
+    line(7.5,0.2,8.5,0.05);
+    line(8.5,0.05,11.5,0.05);
+    line(11.5,0.05,12.5,0.2);
+ 
+    // Mast
+    glColor3ub(105,82,48);
+    glLineWidth(4);
+    line(12.8,-0.1,12.8,1.3);
+ 
+    // Small support
+    glLineWidth(2);
+    line(12.8,0.45,12.3,0.8);
+ 
+    glColor3ub(180,155,105);
+    line(11.8,0.05,12.8,0.45);
+ 
+    glLineWidth(1);
+ 
+    glPopMatrix();
+}
+ 
+ 
+// ================= House =================
+ 
+void house1_1()
+{
+    // Main wall
+    glColor3ub(200,176,142);
+    box(-9,-3.5,-2,-3.5,-2,-1,-9,-1,0,0);
+ 
+    // Wall lines
+    glColor3ub(178,154,122);
+    line(-7.5,-3.5,-7.5,-1);
+    line(-6,-3.5,-6,-1);
+    line(-4.5,-3.5,-4.5,-1);
+    line(-3,-3.5,-3,-1);
+ 
+    // Roof
+    glColor3ub(140,104,80);
+    tri(-9.5,-1,-1.5,-1,-5.5,1,0,0);
+ 
+    glColor3ub(118,86,66);
+    tri(-5.5,1,-1.5,-1,-5.5,-1,0,0);
+ 
+    // Roof bottom
+    glColor3ub(100,74,56);
+    box(-9.5,-1.5,-1.5,-1.5,-1.5,-1,-9.5,-1,0,0);
+ 
+    // Chimney
+    glColor3ub(140,104,80);
+    box(-8,-0.5,-7,-0.5,-7,1,-8,1,0,0);
+ 
+    glColor3ub(118,86,66);
+    box(-8.5,1,-6.5,1,-6.5,1.5,-8.5,1.5,0,0);
+ 
+    // Door
+    glColor3ub(104,74,52);
+    box(-7.5,-3.5,-6,-3.5,-6,-1.5,-7.5,-1.5,0,0);
+ 
+    // Door middle
+    glColor3ub(86,60,42);
+    line(-6.75,-3.5,-6.75,-1.5);
+ 
+    // Window frame
+    glColor3ub(104,74,52);
+    box(-4.5,-3,-3,-3,-3,-1.5,-4.5,-1.5,0,0);
+ 
+    // Window glass
+    glColor3ub(156,182,196);
+    box(-4,-2.5,-3.5,-2.5,-3.5,-2,-4,-2,0,0);
+ 
+    // House base
+    glColor3ub(150,132,104);
+    box(-9.5,-3.5,-1.5,-3.5,-1.5,-3,-9.5,-3,0,0);
+}
+ 
+ 
+// ================= Smoke =================
+ 
+void smoke1_1()
+{
+    if(!showSmoke)
+        return;
+ 
+    for(int i=0;i<3;i++)
+    {
+        float phase=i*1.3f;
+        float cycle=fmodf(smokeTime*0.6f+phase,3.0f);
+        float px=-7.5f+0.15f*sinf(cycle*2.0f+phase);
+        float py=1.6f+cycle;
+        float size=0.22f-cycle*0.05f;
+ 
+        if(size<0.05f)
+            size=0.05f;
+ 
+        float fadeT=cycle/3.0f;
+        float cr=175+fadeT*(224-175);
+        float cg=175+fadeT*(224-175);
+        float cb=175+fadeT*(224-175);
+ 
+        glColor3ub(cr,cg,cb);
+        box(px-size,py-size,px+size,py-size,px+size,py+size,px-size,py+size,0,0);
+    }
+}
+ 
+ 
+// ================= Trees =================
+ 
+// Left tree
+void Tree1_1()
+{
+    // Trunk
+    glColor3ub(108,82,58);
+    box(-17,-3.5,-15,-3.5,-15.5,-0.5,-16.5,-0.5,0,0);
+ 
+    // Leaves rotate
+    glPushMatrix();
+ 
+    glTranslatef(-16,0.5,0);
+    glRotatef(3.0f*sinf(leafTime*1.5f),0,0,1);
+    glTranslatef(16,-0.5,0);
+ 
+    glColor3ub(76,110,62);
+    tri(-16,2.5,-19,0.5,-13,0.5,0,0);
+    tri(-16,1.8,-18.5,0,-13.5,0,0,0);
+    tri(-16,1.2,-18,-0.5,-14,-0.5,0,0);
+ 
+    glPopMatrix();
+}
+ 
+// Middle tree
+void Tree2_1()
+{
+    // Trunk
+    glColor3ub(108,82,58);
+    box(2.8,-3.5,5.2,-3.5,4.7,-0.5,3.3,-0.5,0,0);
+ 
+    // Leaves rotate
+    glPushMatrix();
+ 
+    glTranslatef(3.9,0.5,0);
+    glRotatef(3.0f*sinf(leafTime*1.5f+2.0f),0,0,1);
+    glTranslatef(-3.9,-0.5,0);
+ 
+    glColor3ub(76,110,62);
+    tri(3.9,2.5,0.8,0.5,7.0,0.5,0,0);
+    tri(3.9,1.8,1.2,0,6.6,0,0,0);
+    tri(3.9,1.2,1.5,-0.5,6.3,-0.5,0,0);
+ 
+    glPopMatrix();
+}
+ 
+// Right tree
+void Tree3_1()
+{
+    // Trunk
+    glColor3ub(108,82,58);
+    box(16.8,-3.5,19.2,-3.5,18.7,-0.5,17.3,-0.5,0,0);
+ 
+    // Leaves rotate
+    glPushMatrix();
+ 
+    glTranslatef(18,0.5,0);
+    glRotatef(3.0f*sinf(leafTime*1.5f+4.0f),0,0,1);
+    glTranslatef(-18,-0.5,0);
+ 
+    glColor3ub(76,110,62);
+    tri(18,2.5,14.8,0.5,21.2,0.5,0,0);
+    tri(18,1.8,15.2,0,20.8,0,0,0);
+    tri(18,1.2,15.5,-0.5,20.5,-0.5,0,0);
+ 
+    glPopMatrix();
+}
+ 
+ 
+// ================= Fence =================
+ 
+void fence1_1()
+{
+    glColor3ub(112,91,48);
+    box(-13,-3.5,-12.7,-3.5,-12.7,-1.5,-13,-1.5,0,0);
+    box(-11.5,-3.5,-11.2,-3.5,-11.2,-1.5,-11.5,-1.5,0,0);
+    box(-10,-3.5,-9.7,-3.5,-9.7,-1.5,-10,-1.5,0,0);
+    box(-8.5,-3.5,-8.2,-3.5,-8.2,-1.5,-8.5,-1.5,0,0);
+ 
+    // Horizontal bars
+    glColor3ub(128,103,55);
+    box(-13,-2,-8.5,-2,-8.5,-1.7,-13,-1.7,0,0);
+    box(-13,-2.8,-8.5,-2.8,-8.5,-2.5,-13,-2.5,0,0);
+}
+ 
+ 
+// ================= Pump =================
+ 
+void pump1_1()
+{
+    // Main body
+    glColor3ub(95,100,94);
+    box(-0.45,-3.5,0,-3.5,0,-1.15,-0.45,-1.15,0,0);
+ 
+    // Base
+    glColor3ub(75,80,75);
+    box(-0.7,-3.5,0.25,-3.5,0.25,-3.2,-0.7,-3.2,0,0);
+ 
+    // Top
+    glColor3ub(70,75,70);
+    box(-0.55,-1.25,0.1,-1.25,0.1,-0.75,-0.55,-0.75,0,0);
+ 
+    // Handle
+    glColor3ub(65,70,65);
+    glLineWidth(5);
+    line(-0.2,-0.75,0.65,-0.1);
+    glLineWidth(4);
+    line(0.65,-0.1,1.25,-0.1);
+ 
+    // Pump detail
+    glColor3ub(85,90,84);
+    box(-0.55,-0.8,-0.1,-0.8,0.1,-0.45,-0.35,-0.45,0,0);
+ 
+    glColor3ub(100,105,98);
+    glBegin(GL_POLYGON);
+    glVertex2f(0.05,-1.1);
+    glVertex2f(0.4,-1.1);
+    glVertex2f(0.4,-0.7);
+    glVertex2f(0.2,-0.5);
+    glVertex2f(0.05,-0.65);
+    glEnd();
+ 
+    glColor3ub(120,115,95);
+    box(-0.7,-3.5,0.25,-3.5,0.25,-3.2,-0.7,-3.2,0,0);
+ 
+    glLineWidth(1);
+}
+ 
+ 
+// ================= Haystack =================
+ 
+void haystack1_1()
+{
+    glColor3ub(194,163,72);
+    glBegin(GL_POLYGON);
+    glVertex2f(-14.3,-3.5);
+    glVertex2f(-14.0,-2.5);
+    glVertex2f(-13.5,-2.0);
+    glVertex2f(-12.8,-1.75);
+    glVertex2f(-12.1,-2.0);
+    glVertex2f(-11.6,-2.5);
+    glVertex2f(-11.4,-3.5);
+    glEnd();
+ 
+    // Base
+    glColor3ub(174,142,58);
+    box(-14.4,-3.5,-11.4,-3.5,-11.4,-3.25,-14.4,-3.25,0,0);
+ 
+    // Hay lines
+    glColor3ub(155,124,48);
+    line(-13.9,-3.2,-13.6,-2.4);
+    line(-13.4,-3.2,-13.1,-2.1);
+    line(-12.9,-3.2,-12.7,-2.0);
+    line(-12.4,-3.2,-12.2,-2.2);
+    line(-11.9,-3.2,-11.8,-2.5);
+}
+ 
+ 
+// ================= Cart =================
+ 
+void cart1_1()
+{
+    // Cart body
+    glColor3ub(100,65,38);
+    box(5,-4.8,8.5,-4.8,8.5,-3.8,5,-3.8,0,0);
+ 
+    // Cart upper
+    glColor3ub(130,82,40);
+    box(5.2,-3.8,8.3,-3.8,7.9,-3.1,5.6,-3.1,0,0);
+ 
+    glColor3ub(155,101,48);
+    box(5.5,-3.1,8,-3.1,7.7,-2.75,5.8,-2.75,0,0);
+ 
+    // Lower bar
+    glColor3ub(95,62,38);
+    box(5.2,-4.95,8.3,-4.95,8.3,-4.75,5.2,-4.75,0,0);
+ 
+    // Left wheel
+    glColor3ub(65,65,58);
+    circle(0.43,5.7,-5.25,65,65,58);
+    glColor3ub(125,125,110);
+    circle(0.18,5.7,-5.25,125,125,110);
+ 
+    // Right wheel
+    glColor3ub(65,65,58);
+    circle(0.43,7.8,-5.25,65,65,58);
+    glColor3ub(125,125,110);
+    circle(0.18,7.8,-5.25,125,125,110);
+ 
+    // Cart handle
+    glColor3ub(95,62,38);
+    glLineWidth(5);
+    line(8.3,-3.9,10.2,-4.9);
+    line(8.1,-3.55,10,-4.35);
+    glLineWidth(3);
+    line(9.8,-4.9,10.4,-4.9);
+    line(9.6,-4.35,10.2,-4.35);
+ 
+    // Upper decoration
+    glColor3ub(180,135,65);
+    box(5.8,-2.75,7.7,-2.75,7.4,-2.45,6.1,-2.45,0,0);
+ 
+    glLineWidth(1);
+}
+ 
+ 
+// ================= Flagpole =================
+ 
+void flagpole1_1()
+{
+    glColor3ub(75,75,65);
+    glLineWidth(4);
+    line(16,-3.5,16,2.5);
+    glLineWidth(1);
+ 
+    // Flag
+    if(showFlag)
+    {
+        glPushMatrix();
+ 
+        glTranslatef(16,2.5,0);
+        glRotatef(flagAngle,0,0,1);
+        glTranslatef(-16,-2.5,0);
+ 
+        glColor3ub(190,45,42);
+        tri(16,2.5,18.5,2,16,1.5,0,0);
+ 
+        glPopMatrix();
+    }
+ 
+    // Pole top
+    glColor3ub(180,160,90);
+    circle(0.12,16,2.6,180,160,90);
+}
+ 
+ 
+// ================= Grass =================
+ 
+void grass1_1()
+{
+    glColor3ub(70,120,62);
+    glLineWidth(2);
+ 
+    line(-18,-3.5,-18,-2.8);
+    line(-17.5,-3.5,-17.2,-2.9);
+    line(-15,-3.5,-15,-2.8);
+    line(-14.5,-3.5,-14.2,-2.9);
+    line(2,-3.5,2,-2.8);
+    line(2.5,-3.5,2.8,-2.9);
+    line(4,-3.5,4,-2.8);
+    line(4.5,-3.5,4.8,-2.9);
+    line(6,-3.5,6,-2.8);
+    line(6.5,-3.5,6.8,-2.9);
+    line(18,-3.5,18,-2.8);
+    line(18.5,-3.5,18.8,-2.9);
+ 
+    glLineWidth(1);
+}
+ 
+ 
+// ================= Scene 1 =================
+ 
+void scene1()
+{
+    // Background
+    sky1_1();
+    sun1_1();
+ 
+    // Clouds
+    cloud1_1();
+    cloud2_1();
+ 
+    // Landscape
+    hillBack1_1();
+    hillSmall1_1();
+    hillMain1_1();
+ 
+    river1_1();
+ 
+    // Ground
+    ground1_1();
+ 
+    // Road er upor
+    road1_1();
+ 
+    // Village objects
+    boat1_1();
+    house1_1();
+    smoke1_1();
+ 
+    Tree1_1();
+    Tree2_1();
+    Tree3_1();
+ 
+    fence1_1();
+    pump1_1();
+    haystack1_1();
+    cart1_1();
+    flagpole1_1();
+    grass1_1();
+}
+ 
+ 
+// ================= Scene 3 =================
+ 
+void scene3_1()
+{
+    glColor3ub(24,26,34);
+    box(-20,-10,20,-10,20,10,-20,10,0,0);
+}
+ 
+ 
+// ================= Display =================
+ 
+void display1_1()
+{
+    glClear(GL_COLOR_BUFFER_BIT);
+    glMatrixMode(GL_MODELVIEW);
+ 
+    if(currentScene==1)
+        scene1();
+    else
+        scene3_1();
+ 
+    glFlush();
+}
+ 
+ 
+// ================= Reset =================
+ 
+void resetScene1_1()
+{
+    // Sun
+    sunOffsetY = -5.5f;
+    sunUserControl = 0;
+ 
+    // Sky
+    skyR = 90;
+    skyG = 105;
+    skyB = 135;
+ 
+    // Clouds
+    cloud1OffX = 0.0f;
+    cloud2OffX = 0.0f;
+    showClouds = 1;
+ 
+    // Flag
+    showFlag = 1;
+    flagTime = 0.0f;
+    flagAngle = 0.0f;
+ 
+    // Boat
+    showBoat = 1;
+    boatTime = 0.0f;
+    boatBobY = 0.0f;
+ 
+    // Smoke
+    showSmoke = 1;
+    smokeTime = 0.0f;
+ 
+    // Tree
+    leafTime = 0.0f;
+ 
+    // River
+    riverLineTime = 0.0f;
+    riverLineBoost = 0.0f;
+ 
+    // Animation
+    animationSpeed = 0.015f;
+ 
+    currentScene = 1;
+}
+ 
+ 
+// ================= Animation =================
+ 
+void updateAnimation1_1(int value)
+{
+    // Sun rising
+    if(!sunUserControl)
+    {
+        if(sunOffsetY < 0.0f)
+        {
+            sunOffsetY += animationSpeed;
+ 
+            if(sunOffsetY > 0.0f)
+                sunOffsetY = 0.0f;
+        }
+    }
+ 
+    // ================= Sky color =================
+ 
+    float sunY = 7.0f + sunOffsetY;
+    float t = (sunY-1.5f) / (7.0f-1.5f);
+ 
+    if(t < 0.0f)
+        t = 0.0f;
+    if(t > 1.0f)
+        t = 1.0f;
+ 
+    skyR = 90 + t*(158-90);
+    skyG = 105 + t*(199-105);
+    skyB = 135 + t*(224-135);
+ 
+ 
+    // ================= Clouds =================
+ 
+    if(showClouds)
+    {
+        cloud1OffX += 0.025f;
+        cloud2OffX += 0.02f;
+ 
+        if(cloud1OffX > 40.0f)
+            cloud1OffX = -40.0f;
+ 
+        if(cloud2OffX > 40.0f)
+            cloud2OffX = -40.0f;
+    }
+ 
+ 
+    // ================= Flag =================
+ 
+    if(showFlag)
+    {
+        flagTime += 0.03f;
+        flagAngle = 12.0f*sinf(flagTime*3.0f);
+    }
+ 
+ 
+    // ================= Boat =================
+ 
+    if(showBoat)
+    {
+        boatTime += 0.03f;
+        boatBobY = 0.05f*sinf(boatTime*2.5f);
+    }
+ 
+ 
+    // ================= Smoke =================
+ 
+    if(showSmoke)
+        smokeTime += 0.03f;
+ 
+ 
+    // ================= Leaves =================
+ 
+    leafTime += 0.03f;
+ 
+ 
+    // ================= River =================
+ 
+    riverLineTime += 0.03f;
+ 
+    if(riverLineBoost > 0.0f)
+        riverLineBoost -= 0.01f;
+ 
+    if(riverLineBoost < 0.0f)
+        riverLineBoost = 0.0f;
+ 
+ 
+    glutPostRedisplay();
+    glutTimerFunc(30,updateAnimation1_1,0);
+}
+ 
+ 
+// ================= Mouse =================
+ 
+void mouseClick1_1(int button,int state,int x,int y)
+{
+    if(state != GLUT_DOWN)
+        return;
+ 
+    // Screen theke world coordinate
+    float wx = -20.0f + (x/1200.0f)*40.0f;
+    float wy = 10.0f - (y/600.0f)*20.0f;
+ 
+    // Left click
+    if(button == GLUT_LEFT_BUTTON)
+    {
+        // Sun control
+        if(wy > 1.5f)
+        {
+            sunUserControl = 1;
+            sunOffsetY = wy - 7.0f;
+ 
+            if(sunOffsetY > 0.0f)
+                sunOffsetY = 0.0f;
+ 
+            if(sunOffsetY < -5.5f)
+                sunOffsetY = -5.5f;
+        }
+ 
+        // River click
+        if(wy >= -0.5f && wy <= 1.5f)
+        {
+            riverLineBoost = 0.15f;
+        }
+    }
+ 
+    // Right click
+    else if(button == GLUT_RIGHT_BUTTON)
+    {
+        resetScene1_1();
+    }
+ 
+    glutPostRedisplay();
+}
+ 
+ 
+// ================= Keyboard =================
+ 
+void keyboard1_1(unsigned char key,int x,int y)
+{
+    switch(key)
+    {
+        // Stop animation
+        case 'a':
+        case 'A':
+            animationSpeed = 0.0f;
+            break;
+ 
+        // Start animation
+        case 'w':
+        case 'W':
+            animationSpeed = 0.015f;
+            break;
+ 
+        // Cloud on/off
+        case 'c':
+        case 'C':
+            showClouds = !showClouds;
+            break;
+ 
+        // Flag on/off
+        case 'f':
+        case 'F':
+            showFlag = !showFlag;
+            break;
+ 
+        // Boat on/off
+        case 'b':
+        case 'B':
+            showBoat = !showBoat;
+            break;
+ 
+        // Smoke on/off
+        case 's':
+        case 'S':
+            showSmoke = !showSmoke;
+            break;
+ 
+        // Reset
+        case 'r':
+        case 'R':
+            resetScene1_1();
+            break;
+ 
+        // Scene 2
+        case 'n':
+        case 'N':
+            currentScene = 2;
+            break;
+ 
+        default:
+            break;
+    }
+ 
+    glutPostRedisplay();
+}
+ 
+ 
+// ================= Special keys =================
+ 
+void specialKeys1_1(int key,int x,int y)
+{
+    // Sun up
+    if(key == GLUT_KEY_UP)
+    {
+        sunUserControl = 1;
+        sunOffsetY += 0.3f;
+ 
+        if(sunOffsetY > 0.0f)
+            sunOffsetY = 0.0f;
+    }
+ 
+    // Sun down
+    if(key == GLUT_KEY_DOWN)
+    {
+        sunUserControl = 1;
+        sunOffsetY -= 0.3f;
+ 
+        if(sunOffsetY < -5.5f)
+            sunOffsetY = -5.5f;
+    }
+ 
+    glutPostRedisplay();
+}
+ 
+ 
+// ================= Main =================
+ 
+int main(int argc,char** argv)
+{
+    glutInit(&argc,argv);
+    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
+    glutInitWindowSize(1200,600);
+    glutInitWindowPosition(200,100);
+ 
+    glutCreateWindow("Scene-1 : Gram");
+ 
+    glutDisplayFunc(display1_1);
+    glutMouseFunc(mouseClick1_1);
+    glutKeyboardFunc(keyboard1_1);
+    glutSpecialFunc(specialKeys1_1);
+ 
+    glutTimerFunc(30,updateAnimation1_1,0);
+ 
+    glClearColor(1,1,1,1);
+ 
+    // Coordinate range
+    gluOrtho2D(-20,20,-10,10);
+ 
+    glutMainLoop();
+ 
+    return 0;
+}
